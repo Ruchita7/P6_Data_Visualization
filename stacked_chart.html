@@ -3,20 +3,34 @@
    <head>
       <meta charset="utf-8">
       <script src="https://d3js.org/d3.v4.min.js"></script>
+	  
+	  <style>
+	  
+	  h2.header-align {
+		text-align: center;
+	}
+	  </style>
       <script type="text/javascript">
-         function draw(data) {
-         
-          var margin = 90,
+		 var margin = 90,
               width = 1400 - margin,
               height = 600 - margin;
-         
-         data.sort(function(a, b) { return b.total - a.total; });
-         var colors = ["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"];
+		 var colors = ["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"];
          var z = d3.scaleOrdinal().range(colors);
-         
+          		  
+		 var x = d3.scaleBand()
+           .rangeRound([margin, width])
+           .paddingInner(0.05)
+           .align(0.1);
+               
+         var y = d3.scaleLinear()
+					.rangeRound([height, margin]);	
+				
+		 function draw(data) {
+         data.sort(function(a, b) { return b.total - a.total; });
+               
          var keys = data.columns.slice(1);
          
-         var svg = d3.select("body")
+        var svg = d3.select("#chart_container")
            .append("svg")
            .attr("width", width + margin)
            .attr("height", height + margin)
@@ -29,21 +43,13 @@
            .enter().append("g")
            .attr("fill", function(d) { return z(d.key); });	
          
-         var x = d3.scaleBand()
-           .rangeRound([margin, width])
-           .paddingInner(0.05)
-           .align(0.1);
-         
-         var tooltip = d3.select("body")
+		 var tooltip = d3.select("#chart_container")
            .append("div")
            .attr("class", "tooltip")
            .style("position", "absolute")
            .style("z-index", "1000")
            .style("visibility", "hidden")
-                 
-         var y = d3.scaleLinear()
-					.rangeRound([height, margin]);
-              
+                    
          x.domain(data.map(function(d) { return d.Country; }));
          y.domain([0, d3.max(data, function(d) { return d.total; })]).nice();
          z.domain(keys);
@@ -104,7 +110,7 @@
            .attr("fill", "#000")
            .attr("font-weight", "bold")
            .attr("text-anchor", "start")
-           .text("Maths score");
+           .text("Maths score");		 
          
         var legend = d3.select("svg")
 		  .append("g")
@@ -130,15 +136,56 @@
           .text(function(d) { return d; });
          
          }
+		 
+		 
+		
       </script>
    </head>
    <body>
+
+
+	<form>
+		<label><input type="radio" name="mode" value="father" style="margin-left:100px">Father's Education</label>
+		<label><input type="radio" name="mode" value="mother" checked>Mother's Education</label>
+	</form>
+  
+	<div id="chart_container"></div>
       <script type="text/javascript">
-         d3.csv("maths_grade_mother_education.csv", function(d, i, columns) {
-         for (i = 1, t = 0; i < columns.length; ++i) t += d[columns[i]] = +d[columns[i]];
-			d.total = t;
-			return d;
-         }, draw);
+	 
+	 
+		d3.csv("maths_grade_mother_education.csv", function(d, i, columns) {
+		    d3.select("#chart_container").selectAll("*").remove();
+			d3.select("#chart_container").append("h2").attr("class", "header-align").html("Maths grade based on Mother's education level");
+			for (i = 1, t = 0; i < columns.length; ++i) t += d[columns[i]] = +d[columns[i]];
+				d.total = t;
+				return d;
+			}, draw);
+
+		d3.selectAll("input")
+			.on("change", changed);
+	
+		function changed() {
+			d3.select("#chart_container").selectAll("*").remove();
+			if (this.value === "father") {			
+				d3.select("#chart_container").append("h2").attr("class", "header-align").html("Maths grade based on Father's education level").style("align:center");
+				d3.csv("maths_grade_father_education.csv", function(d, i, columns) {
+		
+				for (i = 1, t = 0; i < columns.length; ++i) t += d[columns[i]] = +d[columns[i]];
+					d.total = t;
+					return d;
+				}, draw);
+
+			}
+		else  {
+			d3.select("#chart_container").append("h2").attr("class", "header-align").html("Maths grade based on Mother's education level").style("align:center");
+			d3.csv("maths_grade_mother_education.csv", function(d, i, columns) {		
+			for (i = 1, t = 0; i < columns.length; ++i) t += d[columns[i]] = +d[columns[i]];
+				d.total = t;
+				return d;
+			}, draw);
+	
+	}	
+		}
       </script>
    </body>
 </html>
