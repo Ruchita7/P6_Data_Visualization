@@ -8,6 +8,29 @@
 	  
 	  h2.header-align {
 		text-align: center;
+		color: #355681; font-size: 29px; font-family: "Libre Baskerville", serif; line-height: 45px; text-shadow: 0 1px 1px #fff; padding-top: 20px; 
+	}
+	p.margin-style		{
+		margin-top: 20px;
+		margin-left: 100px;
+		margin-right: 100px;
+	}
+	h1.heading-style	{
+	margin: 20px 40px 1px 40px;
+	font-weight: normal;
+	position: relative;
+	text-shadow: 0 -1px rgba(0,0,0,0.6);
+	font-size: 28px;
+	line-height: 40px;
+	background: #355681;
+	background: rgba(53,86,129, 0.8);
+	border: 1px solid #fff;
+	padding: 5px 15px;
+	color: white;
+	border-radius: 0 10px 0 10px;
+	box-shadow: inset 0 0 5px rgba(53,86,129, 0.5);
+	font-family: 'Muli', sans-serif;
+	text-align:center;
 	}
 	  </style>
       <script type="text/javascript">
@@ -37,12 +60,6 @@
            .append('g')
            .attr('class','chart');
          
-         d3.select("svg")
-           .selectAll("g")
-           .data(d3.stack().keys(keys)(data))
-           .enter().append("g")
-           .attr("fill", function(d) { return z(d.key); });	
-         
 		 var tooltip = d3.select("#chart_container")
            .append("div")
            .attr("class", "tooltip")
@@ -65,22 +82,24 @@
            .data(function(d) { return d; })
            .enter().append("rect")
            .attr("x", function(d) { return x(d.data.Country); })
-           .attr("y", function(d) { debugger;return y(d[1]); })
+           .attr("y", function(d) { return y(d[1]); })
            .attr("height", function(d) { return y(d[0]) - y(d[1]); })
            .attr("width", x.bandwidth())
            .on("mouseover", function(){return tooltip.style("visibility", "visible");})
            .on("mousemove", function(d){
 				var text="<span style='font-weight:bold'>"+d.data["Country"]+"</span>"+
-				"<br/>None: "+d.data["None"]+
-				"<br/>ISCED 1: "+d.data["ISCED 1"]+
-				"<br/>ISCED 2: "+d.data["ISCED 2"]+
-				"<br/>ISCED 3A,4: "+d.data["ISCED 3A,ISCED 4"]+
-				"<br/>ISCED 3B,C: "+d.data["ISCED 3B,C"]+
-				"<br/>ISCED 5A,6: "+d.data["ISCED 5A,6"]+
-				"<br/>ISCED 5B: "+d.data["ISCED 5B"];
+				"<br/>None: "+(d.data["None"]==0? 'NA':d.data["None"])+
+				"<br/>ISCED 1: "+(d.data["ISCED 1"]==0? 'NA':d.data["ISCED 1"])+
+				"<br/>ISCED 2: "+(d.data["ISCED 2"]==0 ? 'NA' : d.data["ISCED 2"])+
+				"<br/>ISCED 3A,4: "+(d.data["ISCED 3A,4"] ==0 ? 'NA' : d.data["ISCED 3A,4"])+
+				"<br/>ISCED 3B,C: "+(d.data["ISCED 3B,C"] ==0 ? 'NA' : d.data["ISCED 3B,C"])+
+				"<br/>ISCED 5A,6: "+(d.data["ISCED 5A,6"]==0 ? 'NA' : d.data["ISCED 5A,6"])+
+				"<br/>ISCED 5B: "+(d.data["ISCED 5B"]==0 ? 'NA' : d.data["ISCED 5B"]);
 				return tooltip.style("top", (d3.event.pageY-10)+"px")
            .style("left",(d3.event.pageX+10)+"px")
            .style("background-color","white")
+		   .style("border-style","solid")
+		   .style("border-width","1px")
            .html(text);})
            .on("mouseout", function(){return tooltip.style("visibility", "hidden");})
            .on("mouseout", function(d){return tooltip.style("visibility", "hidden");});
@@ -135,18 +154,37 @@
           .attr("dy", "0.32em")
           .text(function(d) { return d; });
          
-         }
-		 
-		 
+         }	 
 		
       </script>
    </head>
    <body>
+	
+	<h1 class="heading-style"> Parent's Education level influencing kids Math grade </h1>
+   <p class="margin-style">
+   The Programme for International Student Assessment (PISA) is a triennial international survey which aims to evaluate education systems worldwide by testing the skills and knowledge of 15-year-old students.<br/>
+   Around 510,000 students completed the assessment in 2012, representing about 28 million 15-year-olds in the schools of the 65 participating countries and economies.With mathematics as its primary focus, the PISA 2012 assessment measured student capacity to reason mathematically and use mathematical concepts, procedures, facts and tools to describe, explain and predict phenomena. The PISA assessment also included questions about students' engagement, drive and self-beliefs.  
+   </p>
+  
+  <p class="margin-style">
+  <b>Parent's Education level influencing kids Math grade</b> visualizes student's Mathematics score for each country based upon parent's ISCED level:
+	<ul style="margin-left: 100px;">
+	<li>ISCED 5B(Second stage of tertiary education)</li>
+	<li>ISCED 5A(First stage of tertiary education),ISCED 6(Second stage of tertiary education)</li>
+	<li>ISCED 3A(Upper secondary education),ISCED 4(Post-secondary non-tertiary education)</li>
+	<li>ISCED 3B,ISCED C(Upper secondary education)</li>
+	<li>ISCED 2(Lower secondary education or second stage of basic education)</li>
+	<li>None</li>
+	</u>  
 
+  </p>
 
+  
 	<form>
-		<label><input type="radio" name="mode" value="father" style="margin-left:100px">Father's Education</label>
-		<label><input type="radio" name="mode" value="mother" checked>Mother's Education</label>
+		Visualization based upon parents education level : <br/>
+			<label><input type="radio" name="mode" value="mother" checked style="margin-left:100px">Mother's Education</label><br/>
+			<label><input type="radio" name="mode" value="father" style="margin-left:100px">Father's Education</label><br/>
+			<label><input type="radio" name="mode" value="both" style="margin-left:100px">Both</label>
 	</form>
   
 	<div id="chart_container"></div>
@@ -156,6 +194,14 @@
 		d3.csv("maths_grade_mother_education.csv", function(d, i, columns) {
 		    d3.select("#chart_container").selectAll("*").remove();
 			d3.select("#chart_container").append("h2").attr("class", "header-align").html("Maths grade based on Mother's education level");
+			d["None"]=+d3.format(".2f")(d["None"]);
+			d["ISCED 1"]=+d3.format(".2f")(d["ISCED 1"]);
+			d["ISCED 2"]=+d3.format(".2f")(d["ISCED 2"]);
+			d["ISCED 3A,4"]=+d3.format(".2f")(d["ISCED 3A,4"]);
+			d["ISCED 3B,C"]=+d3.format(".2f")(d["ISCED 3B,C"]);
+			d["ISCED 5A,6"]=+d3.format(".2f")(d["ISCED 5A,6"]);
+			d["ISCED 5B"]=+d3.format(".2f")(d["ISCED 5B"]);
+			
 			for (i = 1, t = 0; i < columns.length; ++i) t += d[columns[i]] = +d[columns[i]];
 				d.total = t;
 				return d;
@@ -167,18 +213,47 @@
 		function changed() {
 			d3.select("#chart_container").selectAll("*").remove();
 			if (this.value === "father") {			
-				d3.select("#chart_container").append("h2").attr("class", "header-align").html("Maths grade based on Father's education level").style("align:center");
+				d3.select("#chart_container").append("h2").attr("class", "header-align").html("Maths grade based on Father's education level");
 				d3.csv("maths_grade_father_education.csv", function(d, i, columns) {
-		
+				d["None"]=+d3.format(".2f")(d["None"]);
+				d["ISCED 1"]=+d3.format(".2f")(d["ISCED 1"]);
+				d["ISCED 2"]=+d3.format(".2f")(d["ISCED 2"]);
+				d["ISCED 3A,4"]=+d3.format(".2f")(d["ISCED 3A,4"]);
+				d["ISCED 3B,C"]=+d3.format(".2f")(d["ISCED 3B,C"]);
+				d["ISCED 5A,6"]=+d3.format(".2f")(d["ISCED 5A,6"]);
+				d["ISCED 5B"]=+d3.format(".2f")(d["ISCED 5B"]);
 				for (i = 1, t = 0; i < columns.length; ++i) t += d[columns[i]] = +d[columns[i]];
 					d.total = t;
 					return d;
 				}, draw);
 
 			}
-		else  {
-			d3.select("#chart_container").append("h2").attr("class", "header-align").html("Maths grade based on Mother's education level").style("align:center");
+		else if(this.value === "mother") {
+			d3.select("#chart_container").append("h2").attr("class", "header-align").html("Maths grade based on Mother's education level");
 			d3.csv("maths_grade_mother_education.csv", function(d, i, columns) {		
+			d["None"]=+d3.format(".2f")(d["None"]);
+			d["ISCED 1"]=+d3.format(".2f")(d["ISCED 1"]);
+			d["ISCED 2"]=+d3.format(".2f")(d["ISCED 2"]);
+			d["ISCED 3A,4"]=+d3.format(".2f")(d["ISCED 3A,4"]);
+			d["ISCED 3B,C"]=+d3.format(".2f")(d["ISCED 3B,C"]);
+			d["ISCED 5A,6"]=+d3.format(".2f")(d["ISCED 5A,6"]);
+			d["ISCED 5B"]=+d3.format(".2f")(d["ISCED 5B"]);
+			for (i = 1, t = 0; i < columns.length; ++i) t += d[columns[i]] = +d[columns[i]];
+				d.total = t;
+				return d;
+			}, draw);
+	
+	}
+	else	{
+		d3.select("#chart_container").append("h2").attr("class", "header-align").html("Maths grade based on Both parents education level");
+			d3.csv("maths_grade_parents_education.csv", function(d, i, columns) {		
+			d["None"]=+d3.format(".2f")(d["None"]);
+			d["ISCED 1"]=+d3.format(".2f")(d["ISCED 1"]);
+			d["ISCED 2"]=+d3.format(".2f")(d["ISCED 2"]);
+			d["ISCED 3A,4"]=+d3.format(".2f")(d["ISCED 3A,4"]);
+			d["ISCED 3B,C"]=+d3.format(".2f")(d["ISCED 3B,C"]);
+			d["ISCED 5A,6"]=+d3.format(".2f")(d["ISCED 5A,6"]);
+			d["ISCED 5B"]=+d3.format(".2f")(d["ISCED 5B"]);
 			for (i = 1, t = 0; i < columns.length; ++i) t += d[columns[i]] = +d[columns[i]];
 				d.total = t;
 				return d;
@@ -187,5 +262,15 @@
 	}	
 		}
       </script>
+	  
+	  <p  class="margin-style">
+	  
+	The results show a possible correlation between parent's ISCED level having an influence on student's Mathematics grade. From this visualization, the stacked bar chart 
+	for Hungary, Liechtenstein show a significant increase as the mother's education level increases from None to ISCED 5 grades. </p>
+	<p  class="margin-style">
+	The plots for Australia and Slovak republic show an increase as the father's education level increased to ISCED 5. Similarly the chart for Slovak republic show an increase as the parent's education level increased to ISCED 5.
+	</p>
+	
+	  
    </body>
 </html>
