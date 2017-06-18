@@ -15,6 +15,10 @@
 		margin-left: 100px;
 		margin-right: 100px;
 	}
+	p.text-margin	{
+		margin-top: 20px;
+		margin-right: 100px;
+	}
 	h1.heading-style	{
 	margin: 20px 40px 1px 40px;
 	font-weight: normal;
@@ -37,8 +41,9 @@
 		 var margin = 90,
               width = 1400 - margin,
               height = 600 - margin;
-		 var colors = ["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"];
-         var z = d3.scaleOrdinal().range(colors);
+	var colors=["#fdd49e","#fdbb84","#fc8d59","#ef6548","#d7301f","#b30000","#7f0000"];
+	var z = d3.scaleOrdinal().range(colors);
+
           		  
 		 var x = d3.scaleBand()
            .rangeRound([margin, width])
@@ -101,10 +106,10 @@
 		   .style("border-style","solid")
 		   .style("border-width","1px")
            .html(text);})
-           .on("mouseout", function(){return tooltip.style("visibility", "hidden");})
-           .on("mouseout", function(d){return tooltip.style("visibility", "hidden");});
+           .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
          
          
+		 
          d3.select("svg")
 		   .append("g")
            .attr("class", "axis")
@@ -176,12 +181,15 @@
 	<li>ISCED 2(Lower secondary education or second stage of basic education)</li>
 	<li>None</li>
 	</u>  
-
   </p>
 
+  <p class="text-margin">
+  In fact researches have shown that parents with a educated background have a much easier time preparing their children for school compared to parents lacking this background.
+  The education that children receive is very much dependent on the education that their parents received when they were children. Researches show that the literacy of their
+  parents strongly affects the education of their children.</p>
   
 	<form>
-		Visualization based upon parents education level : <br/>
+		<b>Visualization based upon parents education level : </b> <br/>
 			<label><input type="radio" name="mode" value="mother" checked style="margin-left:100px">Mother's Education</label><br/>
 			<label><input type="radio" name="mode" value="father" style="margin-left:100px">Father's Education</label><br/>
 			<label><input type="radio" name="mode" value="both" style="margin-left:100px">Both</label>
@@ -190,7 +198,7 @@
 	<div id="chart_container"></div>
       <script type="text/javascript">
 	 
-	 
+		//load the default selection - based on mother's education grade
 		d3.csv("maths_grade_mother_education.csv", function(d, i, columns) {
 		    d3.select("#chart_container").selectAll("*").remove();
 			d3.select("#chart_container").append("h2").attr("class", "header-align").html("Maths grade based on Mother's education level");
@@ -212,6 +220,7 @@
 	
 		function changed() {
 			d3.select("#chart_container").selectAll("*").remove();
+			//if selected value is father's education level
 			if (this.value === "father") {			
 				d3.select("#chart_container").append("h2").attr("class", "header-align").html("Maths grade based on Father's education level");
 				d3.csv("maths_grade_father_education.csv", function(d, i, columns) {
@@ -228,6 +237,7 @@
 				}, draw);
 
 			}
+			//if selected value is mother's education level
 		else if(this.value === "mother") {
 			d3.select("#chart_container").append("h2").attr("class", "header-align").html("Maths grade based on Mother's education level");
 			d3.csv("maths_grade_mother_education.csv", function(d, i, columns) {		
@@ -244,6 +254,7 @@
 			}, draw);
 	
 	}
+	//if selected value is both parents's education level
 	else	{
 		d3.select("#chart_container").append("h2").attr("class", "header-align").html("Maths grade based on Both parents education level");
 			d3.csv("maths_grade_parents_education.csv", function(d, i, columns) {		
@@ -263,11 +274,11 @@
 		}
       </script>
 	  
-	  <p  class="margin-style">
+	  <p class="text-margin">
 	  
 	The results show a possible correlation between parent's ISCED level having an influence on student's Mathematics grade. From this visualization, the stacked bar chart 
 	for Hungary, Liechtenstein show a significant increase as the mother's education level increases from None to ISCED 5 grades. </p>
-	<p  class="margin-style">
+	<p class="text-margin">
 	The plots for Australia and Slovak republic show an increase as the father's education level increased to ISCED 5. Similarly the chart for Slovak republic show an increase as the parent's education level increased to ISCED 5.
 	</p>
 	

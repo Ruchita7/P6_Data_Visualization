@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <title>Pisa Visualisations</title>
+<head>
 <style>
 
 svg {
@@ -51,8 +52,17 @@ svg {
   stroke-width: 1px;
 }
 
+p.text-margin	{
+		margin-top: 20px;
+		margin-right: 100px;
+		margin-left: 100px;
+	}
+
+	 h2.header-align {
+		margin-left: 100px;
+		color: #355681; font-size: 29px; font-family: "Libre Baskerville", serif; line-height: 45px; text-shadow: 0 1px 1px #fff; padding-top: 20px; 
+	}
 </style>
-<body>
 <script src="//d3js.org/d3.v3.min.js"></script>
 <script>
 
@@ -67,12 +77,22 @@ var dimensions = [
     type: String
   },
   {
+    name: "None",
+    scale: d3.scale.linear().range([height, 0]),
+    type: Number
+  },
+  {
     name: "ISCED 1",
     scale: d3.scale.linear().range([0, height]),
     type: Number
   },
   {
     name: "ISCED 2",
+    scale: d3.scale.linear().range([height, 0]),
+    type: Number
+  },
+   {
+    name: "ISCED 3A,4",
     scale: d3.scale.linear().range([height, 0]),
     type: Number
   },
@@ -90,19 +110,16 @@ var dimensions = [
     name: "ISCED 5B",
     scale: d3.scale.linear().range([height, 0]),
     type: Number
-  },
-  {
-    name: "ISCED 3A,ISCED 4",
-    scale: d3.scale.linear().range([height, 0]),
-    type: Number
-  },
-  {
-    name: "None",
-    scale: d3.scale.linear().range([height, 0]),
-    type: Number
   }
 ];
 
+function draw(data)	{
+ dimensions.forEach(function(dimension) {
+    dimension.scale.domain(dimension.type === Number
+        ? d3.extent(data, function(d) { return +d[dimension.name]; })
+        : data.map(function(d) { return d[dimension.name]; }).sort());
+  })
+  
 var x = d3.scale.ordinal()
     .domain(dimensions.map(function(d) { return d.name; }))
     .rangePoints([0, width]);
@@ -113,7 +130,7 @@ var line = d3.svg.line()
 var yAxis = d3.svg.axis()
     .orient("left");
 
-var svg = d3.select("body").append("svg")
+var svg = d3.select("#chart_container").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
   .append("g")
@@ -124,29 +141,23 @@ var dimension = svg.selectAll(".dimension")
   .enter().append("g")
     .attr("class", "dimension")
     .attr("transform", function(d) { return "translate(" + x(d.name) + ")"; });
-
-d3.csv("maths_grade_mother_education.csv", function(error, data) {
-  if (error) throw error;
-
-  dimensions.forEach(function(dimension) {
-    dimension.scale.domain(dimension.type === Number
-        ? d3.extent(data, function(d) { return +d[dimension.name]; })
-        : data.map(function(d) { return d[dimension.name]; }).sort());
-  });
-
+	
+	
+	
+	
   svg.append("g")
       .attr("class", "background")
     .selectAll("path")
       .data(data)
     .enter().append("path")
-      .attr("d", draw);
+      .attr("d", draw_chart);
 
   svg.append("g")
       .attr("class", "foreground")
     .selectAll("path")
       .data(data)
     .enter().append("path")
-      .attr("d", draw);
+      .attr("d", draw_chart);
 
   dimension.append("g")
       .attr("class", "axis")
@@ -180,13 +191,55 @@ d3.csv("maths_grade_mother_education.csv", function(error, data) {
   function moveToFront() {
     this.parentNode.appendChild(this);
   }
-});
-
-function draw(d) {
+  
+  function draw_chart(d) {
   return line(dimensions.map(function(dimension) {
   debugger;
     return [x(dimension.name), dimension.scale(d[dimension.name])];
   }));
 }
-
+}
 </script>
+</head>
+<body>
+<h1 align="center"> Parent's Education level influencing kids Math grade </h1>
+<form>
+		<p class="text-margin"><b>Visualization based upon parents education level : </b></p> <br/>
+			<label><input type="radio" name="mode" value="mother" checked style="margin-left:100px">Mother's Education</label><br/>
+			<label><input type="radio" name="mode" value="father" style="margin-left:100px">Father's Education</label><br/>
+			<label><input type="radio" name="mode" value="both" style="margin-left:100px">Both</label>
+	</form>
+  
+  <div id="chart_container"></div>
+  
+<script type="text/javascript">
+d3.select("#chart_container").append("h2").attr("class", "header-align").html("Maths grade based on Mother's education level");
+d3.csv("maths_grade_mother_education.csv",
+
+draw);
+
+d3.selectAll("input")
+			.on("change", changed);
+
+			function changed() {
+			d3.select("#chart_container").selectAll("*").remove();
+			//if selected value is father's education level
+			if (this.value === "father") {			
+				d3.select("#chart_container").append("h2").attr("class", "header-align").html("Maths grade based on Father's education level");
+				d3.csv("maths_grade_father_education.csv",draw);
+			}
+			//if selected value is mother's education level
+
+			else if(this.value === "mother") {
+			d3.select("#chart_container").append("h2").attr("class", "header-align").html("Maths grade based on Mother's education level");
+			d3.csv("maths_grade_mother_education.csv", draw);
+			}
+			//if selected value is both parents's education level
+
+			else	{
+			d3.select("#chart_container").append("h2").attr("class", "header-align").html("Maths grade based on Both parents education level");
+			d3.csv("maths_grade_parents_education.csv",draw);
+			}
+			}
+</script>
+</body>
