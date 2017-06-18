@@ -41,7 +41,7 @@ I like that you have provided explanation for variables you are looking into. Al
 Frankly there is nothing big that I would like to see different in your visualization. It gives the information it is claiming to give in a clear manner. 
 Good job and best wishes!
 
-##Resources<br/>
+## Resources<br/>
 
 https://bl.ocks.org/mbostock
 https://wdexplorer.com/20-examples-beautiful-css-typography-design/
