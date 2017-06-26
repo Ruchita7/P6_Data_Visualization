@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <meta charset="utf-8">
+      <script src="https://d3js.org/d3.v4.min.js"></script>
+	  
+	  <style>
+	  	h2.header-align {
+				text-align: center;
+				color: #355681; 
+				font-size: 29px; 
+				font-family: "Libre Baskerville", serif;
+				line-height: 45px; 
+				text-shadow: 0 1px 1px #fff; 
+				padding-top: 20px; 
+			}
+			p.margin-style		{
+				margin-top: 20px;
+				margin-left: 100px;
+				margin-right: 100px;
+			}
+			p.text-margin	{
+				margin-top: 20px;
+				margin-right: 100px;
+				margin-left: 200px;
+			}
+			h1.heading-style	{
+				margin: 20px 40px 1px 40px;
+				font-weight: normal;
+				position: relative;
+				text-shadow: 0 -1px rgba(0,0,0,0.6);
+				font-size: 28px;
+				line-height: 40px;
+				background: #355681;
+				background: rgba(53,86,129, 0.8);
+				border: 1px solid #fff;
+				padding: 5px 15px;
+				color: white;
+				border-radius: 0 10px 0 10px;
+				box-shadow: inset 0 0 5px rgba(53,86,129, 0.5);
+				font-family: 'Muli', sans-serif;
+				text-align:center;
+			}
+			.toolTip {
+  			position: absolute;
+  			display: none;
+  			min-width: 80px;
+  			height: auto;
+  			background: none repeat scroll 0 0 #ffffff;
+  			border: 1px solid #6F257F;
+  			padding: 14px;
+  			text-align: center;
+			}
+			.bar {
+  			fill: steelblue;
+			}
+			.bar:hover {
+  			fill: brown;
+			}
+		</style>
+    
+    <script type="text/javascript">
+		 	//defining global variables
+		 	var margin = 90,
+          width = 1400 - margin,
+          height = 600 - margin;
+			var colors=["#fdd49e","#fdbb84","#fc8d59","#ef6548","#d7301f","#b30000", "#7f0000"];
+			var z = d3.scaleOrdinal().range(colors);    		  
+		 	var x = d3.scaleBand()
+           		.rangeRound([margin, width])
+           		.paddingInner(0.05)
+           		.align(0.1);         
+      var y = d3.scaleLinear()
+							.rangeRound([height, margin]);	
+			
+			//draw function for stacked bar chart	to show country wise comparison of children's maths score based on parent's ISCED level
+		 	function draw(data) {
+        data.sort(function(a, b) { return b.total - a.total; });       
+        var keys = data.columns.slice(1);
+        //defining chart container 
+        var svg = d3.select('#chart_container')
+           .append('svg')
+           .attr('width', width + margin)
+           .attr('height', height + margin)
+           .append('g')
+           .attr('class','chart');
+        
+        //added tooltip component to the chart 
+		 		var tooltip = d3.select('#chart_container')
+           .append('div')
+           .attr('class', 'tooltip')
+           .style('position', 'absolute')
+           .style('z-index', '1000')
+           .style('visibility', 'hidden');
+        
+        //defining domain of the axes            
+        x.domain(data.map(function(d) { return d.Country; }));
+        y.domain([0, d3.max(data, function(d) { return d.total; })]).nice();
+        z.domain(keys);
+        //empty selection of grouped data based on ISCED level 
+        var groups =  d3.select('svg')
+           						.append('g')
+           						.selectAll('g')
+           						.data(d3.stack().keys(keys)(data))
+           						.enter().append('g')
+           						.attr('fill', function(d) { return z(d.key); }); 
+        //bind data and add tooltip 
+        var rect = groups.selectAll('rect')
+           				.data(function(d) { return d; })
+           				.enter().append('rect')
+           				.attr('x', function(d) { return x(d.data.Country); })
+           				.attr('y', function(d) { return y(d[1]); })
+           				.attr('height', function(d) { return y(d[0]) - y(d[1]); })
+           				.attr('width', x.bandwidth())
+           				.on('mouseover', function(){return tooltip.style('visibility','visible');})
+           				.on('mousemove', function(d){
+           						//add tooltip content to show country wise maths score for each ISCED level
+											var text="<span style='font-weight:bold'>"+
+																d.data["Country"]+"</span>"+
+																"<br/>None: "+(d.data["None"]==0? "NA":d.data["None"])+
+																"<br/>ISCED 1: "+(d.data["ISCED 1"]==0? "NA":d.data["ISCED 1"])+
+																"<br/>ISCED 2: "+(d.data["ISCED 2"]==0 ? "NA" : d.data["ISCED 2"])+
+																"<br/>ISCED 3A,4: "+(d.data["ISCED 3A,4"] ==0 ? "NA" : d.data["ISCED 3A,4"])+
+																"<br/>ISCED 3B,C: "+(d.data["ISCED 3B,C"] ==0 ? "NA" : d.data["ISCED 3B,C"])+
+																"<br/>ISCED 5A,6: "+(d.data["ISCED 5A,6"]==0 ? "NA" : d.data["ISCED 5A,6"])+
+																"<br/>ISCED 5B: "+(d.data["ISCED 5B"]==0 ? "NA" : d.data["ISCED 5B"]);
+																return tooltip.style('top', (d3.event.pageY-10)+'px')
+           											.style('left',(d3.event.pageX+10)+'px')
+           											.style('background-color','white')
+		   													.style('border-style','solid')
+		   													.style('border-width','1px')
+           											.html(text);
+           			})
+           			.on('mouseout', function(){
+           					return tooltip.style('visibility', 'hidden');
+           			});
+        //define axes text 		 
+        d3.select('svg')
+		   		.append('g')
+          .attr('class', 'axis')
+          .attr('transform', 'translate(0,' + height + ')')
+          .call(d3.axisBottom(x))
+          .selectAll('text')
+          .attr('y', 0)
+          .attr('x', 9)
+          .attr('dy', '.35em')
+          .attr('transform', 'rotate(45)')
+          .style('text-anchor', 'start');
+         
+        d3.select('svg')
+		   		.append('g')
+          .attr('class', 'axis')
+          .attr('transform', 'translate(' + margin + ',0)')
+          .call(d3.axisLeft(y).ticks(null, 's'))
+          .append('text')
+		   		.attr('x', 2)
+          .attr('y', y(y.ticks().pop()) + 0.5)
+          .attr('dy', '0.32em')
+          .attr('fill', '#000')
+          .attr('font-weight', 'bold')
+          .attr('text-anchor', 'start')
+          .text('Maths score');		 
+         
+        //add legend content
+        var legend = d3.select('svg')
+		  		.append('g')
+          .attr('font-family', 'sans-serif')
+          .attr('font-size', 10)
+          .attr('text-anchor', 'end')
+          .selectAll('g')
+          .data(keys.slice().reverse())
+          .enter()
+		  		.append('g')
+          .attr('transform', function(d, i) { 
+          	return 'translate(0,' + i * 20 + ')'; 
+          });
+         
+        legend.append('rect')
+          .attr('x', width - 19)
+          .attr('width', 19)
+          .attr('height', 19)
+          .attr('fill', z);
+         
+        legend.append('text')
+		  		.attr('x', width - 24)
+          .attr('y', 9.5)
+          .attr('dy', '0.32em')
+          .text(function(d) { return d; });
+         
+      }
+
+      //script for showing bar chart to compare parent's grade and their effect on children's maths grades
+      function draw_bar(data)		{
+      	//re-defining the chart container
+        var svg = d3.select('#chart_container')
+           					.append('svg')
+           					.attr('width', width + margin)
+           					.attr('height', height + margin)
+           					.append('g')
+           					.attr('class','chart');
+        //tooltip variable 
+        var tooltip = d3.select('#chart_container')
+        								.append('div')
+        								.attr('class', 'toolTip');
+        //defining axes 									
+				var x = d3.scaleBand().rangeRound([0, width]).padding(0.1),
+    						y = d3.scaleLinear().rangeRound([height, 0]);
+
+				var g = svg.append('g')
+    						.attr('transform', 'translate(' + margin + ',' + '0)');
+    		x.domain(data.map(function(d) { return d.Grade; }));
+    		y.domain([0, d3.max(data, function(d) { return d.Score; })]);
+
+    		g.append('g')
+        	.attr('class', 'axis axis--x')
+        	.attr('transform', 'translate(0,' + height + ')')
+        	.call(d3.axisBottom(x));
+
+    		g.append('g')
+      		.attr('class', 'axis axis--y')
+      		.call(d3.axisLeft(y).ticks(10))
+      		.append('text')	
+        	.attr('transform',  'translate(10,0)')
+        	.attr('y', 6)
+        	.attr('dy', '0.71em')
+        	.attr('fill', '#000')
+          .attr('font-weight', 'bold')
+        	.attr('text-anchor', 'start')
+        	.text('Average Maths Score');
+
+        //bind data to the bar chart
+    		g.selectAll('.bar')
+      		.data(data)
+      	 	.enter().append('rect')
+	    		.attr('class', 'bar')
+        	.attr('x', function(d) { return x(d.Grade); })
+        	.attr('y', function(d) { return y(d.Score); })
+        	.attr('width', x.bandwidth())
+        	.attr('height', function(d) { return height - y(d.Score); })
+        	.on('mousemove', function(d){
+        		 //defining the tooltip showing scores for each grade
+            	tooltip
+                .style('left', d3.event.pageX - 50 + 'px')
+              	.style('top', d3.event.pageY - 70 + 'px')
+              	.style('display', 'inline-block')
+              	.html((d.Grade) + '<br>'  + (d.Score));
+        		})
+    		.on('mouseout', function(d){ 
+    			tooltip.style('display', 'none');});
+    		};	 
+		
+    </script>
+  </head>
+ 	<body>
+	
+		<h1 class="heading-style"> Parent's Education level influencing kids Math grade </h1>
+  	<p class="margin-style">
+  		The Programme for International Student Assessment (PISA) is a triennial international survey which aims to evaluate education systems worldwide by testing the skills and knowledge of 15-year-old students.<br/>
+  		Around 510,000 students completed the assessment in 2012, representing about 28 million 15-year-olds in the schools of the 65 participating countries and economies.With mathematics as its primary focus, the PISA 2012 assessment measured student capacity to reason mathematically and use mathematical concepts, procedures, facts and tools to describe, explain and predict phenomena. The PISA assessment also included questions about students' engagement, drive and self-beliefs.  
+  	</p>
+  
+ 	 	<p class="margin-style">
+  		<b>Parent's Education level influencing kids Math grade</b> visualizes student's Mathematics score for each country based upon parent's ISCED level:
+			<ul style="margin-left: 100px;">
+				<li>ISCED 5B(Second stage of tertiary education)</li>
+				<li>ISCED 5A(First stage of tertiary education),ISCED 6(Second stage of tertiary education)</li>
+				<li>ISCED 3A(Upper secondary education),ISCED 4(Post-secondary non-tertiary education)</li>
+				<li>ISCED 3B,ISCED C(Upper secondary education)</li>
+				<li>ISCED 2(Lower secondary education or second stage of basic education)</li>
+				<li>None</li>
+			</ul>  
+  	</p>
+
+  	<p class="margin-style">
+  		In fact researches have shown that parents with a educated background have a much easier time preparing their children for school compared to parents lacking this background.
+  		The education that children receive is very much dependent on the education that their parents received when they were children. Researches show that the literacy of their parents strongly affects the education of their children.</p>
+  
+  	<p class="margin-style">
+			The <b>results</b> show a possible correlation between parent's ISCED level having an influence on student's Mathematics grade. 
+			
+			<ul style="margin-left: 100px;margin-right:100px">
+				<li>From this visualization, the stacked bar chart for Hungary, Liechtenstein show a significant increase as the mother's education level increases from None to ISCED 5 grades.</li>
+				<li>The plots for Australia and Slovak republic show an increase as the father's education level increased to ISCED 5. </li>
+				<li>Similarly the chart for Slovak republic show an increase as the parent's education level increased to ISCED 5.</li>
+				<li>	Also the relative comparison chart show that as children of parents having higher ISCED level i.e. ISCED 5A,6 or ISCED 5B have higher maths grade as compared to parents having lower ISCED level</li>
+			</ul>
+			</p>
+		</p>
+	
+		<form>
+			<p class="margin-style"><b>Visualization based upon parents education level : </b></p>
+				<label><input type="radio" name="mode" value="mother" checked style="margin-left:130px">Mother's Education</label><br/>
+				<label><input type="radio" name="mode" value="father" style="margin-left:130px">Father's Education</label><br/>
+				<label><input type="radio" name="mode" value="both" style="margin-left:130px">Both</label><br/>
+				<label><input type="radio" name="mode" value="compare" style="margin-left:130px">Compare Grades</label>
+		</form>
+  
+		<div id="chart_container"></div>
+  	<script type="text/javascript">
+	 
+		//load the default selection - based on mother's education grade
+				d3.csv('maths_grade_mother_education.csv', function(d, i, columns) {
+					 //clear the chart
+		    		d3.select('#chart_container')
+		    			.selectAll('*').remove();
+		    			//prepare the chart header and format data to two decimal places
+						d3.select('#chart_container')
+							.append('h2')
+							.attr('class', 'header-align')
+							.html("Maths grade comparison based on Mother's education level across countries");
+						d['None']=+d3.format('.2f')(d['None']);
+						d['ISCED 1']=+d3.format('.2f')(d['ISCED 1']);
+						d['ISCED 2']=+d3.format('.2f')(d['ISCED 2']);
+						d['ISCED 3A,4']=+d3.format('.2f')(d['ISCED 3A,4']);
+						d['ISCED 3B,C']=+d3.format('.2f')(d['ISCED 3B,C']);
+						d['ISCED 5A,6']=+d3.format('.2f')(d['ISCED 5A,6']);
+						d['ISCED 5B']=+d3.format('.2f')(d['ISCED 5B']);
+			
+						for (i = 1, t = 0; i < columns.length; ++i) t += d[columns[i]] = +d[columns[i]];
+			  		d.total = t;
+						return d;
+				}, draw);
+
+				d3.selectAll('input')
+					.on('change', changed);
+	
+				//script called for radio button selection
+				function changed() {
+					d3.select('#chart_container')
+						.selectAll('*').remove();
+	
+					//if selected value is father's education level
+					if (this.value === 'father') {			
+						d3.select('#chart_container')
+						.append('h2')
+						.attr('class', 'header-align')
+						.html("Maths grade comparison based on Father's education level across countries");
+						d3.csv('maths_grade_father_education.csv', function(d, i, columns){
+								//prepare the chart header and format data to two decimal places
+							d['None']=+d3.format('.2f')(d['None']);
+							d['ISCED 1']=+d3.format('.2f')(d['ISCED 1']);
+							d['ISCED 2']=+d3.format('.2f')(d['ISCED 2']);
+							d['ISCED 3A,4']=+d3.format('.2f')(d['ISCED 3A,4']);
+							d['ISCED 3B,C']=+d3.format('.2f')(d['ISCED 3B,C']);
+							d['ISCED 5A,6']=+d3.format('.2f')(d['ISCED 5A,6']);
+							d['ISCED 5B']=+d3.format('.2f')(d['ISCED 5B']);
+	
+							for (i = 1, t = 0; i < columns.length; ++i) t += d[columns[i]] = +d[columns[i]];
+							d.total = t;
+							return d;
+						}, draw);
+					}
+	
+					//if selected value is mother's education level
+					else if(this.value === 'mother') {
+						d3.select('#chart_container')
+							.append('h2')
+							.attr('class', 'header-align')
+							.html("Maths grade comparison based on Mother's education level across countries");
+							d3.csv('maths_grade_mother_education.csv',
+								 function(d, i, columns) {	
+								 		//prepare the chart header and format data to two decimal places
+									d['None']=+d3.format('.2f')(d['None']);
+									d['ISCED 1']=+d3.format('.2f')(d['ISCED 1']);
+									d['ISCED 2']=+d3.format('.2f')(d['ISCED 2']);
+									d['ISCED 3A,4']=+d3.format('.2f')(d['ISCED 3A,4']);
+									d['ISCED 3B,C']=+d3.format('.2f')(d['ISCED 3B,C']);
+									d['ISCED 5A,6']=+d3.format('.2f')(d['ISCED 5A,6']);
+									d['ISCED 5B']=+d3.format('.2f')(d['ISCED 5B']);
+	
+									for (i = 1, t = 0; i < columns.length; ++i) t += d[columns[i]] = +d[columns[i]];
+									d.total = t;
+									return d;
+								}, draw);
+						}
+					 //if selected value is comparison of parent's grades call script for bar chart
+					else if(this.value === 'compare')		{
+						d3.select('#chart_container')
+							.append('h2')
+							.attr('class', 'header-align')
+							.html("Maths grade comparison based on parent's education level");
+						d3.csv('maths_grade_comparison_grades.csv', function(d)	{
+								d['Score']=+d3.format('.2f')(d['Score']);
+								return d;
+							},draw_bar);
+					}
+		
+					//if selected value is both parents's education level
+					else	{
+						d3.select('#chart_container')
+							.append('h2')
+							.attr('class', 'header-align')
+							.html('Maths grade comparison based on Both parents education level across countries');
+						d3.csv('maths_grade_parents_education.csv', function(d, i, columns){	
+								//prepare the chart header and format data to two decimal places
+								d['None']=+d3.format('.2f')(d['None']);
+								d['ISCED 1']=+d3.format('.2f')(d['ISCED 1']);
+								d['ISCED 2']=+d3.format('.2f')(d['ISCED 2']);
+								d['ISCED 3A,4']=+d3.format('.2f')(d['ISCED 3A,4']);
+								d['ISCED 3B,C']=+d3.format('.2f')(d['ISCED 3B,C']);
+								d['ISCED 5A,6']=+d3.format('.2f')(d['ISCED 5A,6']);
+								d['ISCED 5B']=+d3.format('.2f')(d['ISCED 5B']);
+	
+								for (i = 1, t = 0; i < columns.length; ++i) t += d[columns[i]] = +d[columns[i]];
+								d.total = t;
+								return d;
+							}, draw);
+					}	
+				}
+  	</script>
+  </body>
+</html>

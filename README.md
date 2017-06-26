@@ -25,7 +25,7 @@ So as a result of this I created my third visualization which used stacked bar c
 
 Also to depict the relationship between each grade, I chose to alter the color scheme to shades of red/orange with intense shades of reds for higher ISCED levels like ISCED 5B, ISCED 5A,6 and dull shades of orange to represent lower ISCED level like None,ISCED 1. Also I wrote a narrative about how parent's education level influences kids studies in the long run to depict the findings of my chart.
 
-The final visualization can be found at [PISA visualization](https://bl.ocks.org/Ruchita7/df66aff9788edda0369e8e8687ba3c6f)
+The final visualization can be found at [PISA visualization](https://bl.ocks.org/Ruchita7/raw/1772b9377ae5521a8acb3e07d8839127/)
 
 ## Feedback
 
